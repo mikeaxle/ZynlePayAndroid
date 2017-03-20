@@ -31,7 +31,7 @@ public class SaleItemActivity extends AppCompatActivity {
         tb.setNavigationOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                Intent b = new Intent(getApplicationContext(), MainActivity.class);
+                Intent b = new Intent(getApplicationContext(), SaleListActivity.class);
                 startActivity(b);
                 finish();
             }
@@ -74,17 +74,27 @@ public class SaleItemActivity extends AppCompatActivity {
 
             case R.id.saveButton:
                 //set changes
-                sale.setAmount(amount.getText().toString());
-                sale.setItemName(itemName.getText().toString());
+                //if the string fields are empty
+                if(amount.getText().toString().trim().equals("")  || itemName.getText().toString().trim().equals("")) {
 
-                //write changes to singlton object
-                AppSingleton.getInstance().editSale(saleID, sale);
+                    //get current item name and amount
+                    amount.setText(sale.getAmount());
+                    itemName.setText(sale.getItemName());
 
-                Log.d(TAG, "Sale Saved");
+                } else {
+
+                    //set new amount
+                    sale.setAmount(amount.getText().toString());
+                    sale.setItemName(itemName.getText().toString());
+
+                    //write changes to singlton object
+                    AppSingleton.getInstance().editSale(saleID, sale);
+
+                    Log.d(TAG, "Sale Saved");
+                }
 
                 //navigate back
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
                 startActivity(i);
                 finish();
 

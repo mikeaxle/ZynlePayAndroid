@@ -31,6 +31,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
@@ -494,6 +495,10 @@ public class ChargeCardActivity extends AppCompatActivity {
         //create request string
         urlJsonObj = createUrlString(amount.substring(0,amount.length() -3),cardNumber,expiryMonth,expiryYear,cvv,"product",name);
 
+        Log.d(TAG, "url is: " + urlJsonObj);
+
+
+
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Method.GET,
                 urlJsonObj, null, new Response.Listener<JSONObject>() {
 
@@ -624,7 +629,7 @@ public class ChargeCardActivity extends AppCompatActivity {
         url += "&expiryyear=" + expiryYear;
         url += "&cvv=" + cvv;
         url += "&product=" + product;
-        url += "&nameoncard=" + nameOnCard;
+        url += "&nameoncard=" + URLEncoder.encode(nameOnCard);
 
         Log.d(TAG, "new Date: " + date.getTime());
         Log.d(TAG, "requestID: " + (int)requestId);

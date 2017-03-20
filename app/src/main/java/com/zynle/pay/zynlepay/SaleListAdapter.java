@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 /**
@@ -32,7 +34,7 @@ public class SaleListAdapter extends ArrayAdapter<Sale> {
         try {
 
             //get current sale
-            Sale item = getItem(position);
+            final Sale item = getItem(position);
 
 
             View v = null;
@@ -48,6 +50,31 @@ public class SaleListAdapter extends ArrayAdapter<Sale> {
             //get textviews
             TextView itemName = (TextView) v.findViewById(R.id.listItemNameTextView);
             TextView amount = (TextView) v.findViewById(R.id.listAmountTextView);
+
+            //get delete button
+            ImageButton deleteButton = (ImageButton)  v.findViewById(R.id.deleteImageButton);
+
+            //set tag
+            deleteButton.setTag(position);
+
+            //set delete button onClick Listener
+            deleteButton.setOnClickListener(
+                    new Button.OnClickListener(){
+                        @Override
+                        public void onClick(View v){
+                                //cast index to integer
+                                Integer index = (Integer) v.getTag();
+
+                                //delete sale at index
+                                AppSingleton.getInstance().deleteSale(index);
+                                remove(item);
+
+                                //notify data set changed
+                                notifyDataSetChanged();
+
+                        }
+                    }
+            );
 
             //assign with values from current item
             itemName.setText(item.getItemName());

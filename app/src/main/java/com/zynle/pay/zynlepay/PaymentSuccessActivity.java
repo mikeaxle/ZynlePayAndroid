@@ -102,25 +102,39 @@ public class PaymentSuccessActivity extends AppCompatActivity {
 
     //on button click
     public void onClick(View view){
+        //assign characters from ui element to phone number digits
+        phoneNumberDigits = phoneNumber.getText().toString().trim();
 
-                //assign characters from ui element to phone number digits
-                phoneNumberDigits = phoneNumber.getText().toString().trim();
+        //check if phone number field is empty
+        if(phoneNumberDigits.isEmpty() || phoneNumberDigits.equals("") || phoneNumberDigits == null){
 
-                if(phoneNumberDigits.isEmpty() || phoneNumberDigits.equals("") || phoneNumberDigits == null){
+            Log.d(TAG,"No phone number was entered");
 
-                    Log.d(TAG,"No phone number was entered");
+            //delete sales
+            AppSingleton.getInstance().clearSales();
 
-                } else {
+            //send to home page
+            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+            finish();
+        } else {
 
-                    //assign value to sms
-                    sms = String.format("Thank you for your order. You receipt number is %s for the amount of K %s", ref.substring(0, 5), totalSale);
+            //check phone number length
+            if(phoneNumberDigits.length() != 10) {
 
-                    //use string format to add variables to string
-                    url = String.format("http://www.bulksms.co.zm/smsservice/httpapi?username=zynlepay&password=zynle12&msg=%s&shortcode=2343&sender_id=0955000679&phone=%s&api_key=121231313213123123", sms, phoneNumberDigits);
+                Toast.makeText(this, "SMS cannot be sent to " + phoneNumberDigits + ". Check phone number.", Toast.LENGTH_SHORT).show();
 
-                    //call sms api
-                    makeStringRequest();
-                }
+            } else {
+
+                //assign value to sms
+                sms = String.format("Thank you for your order. You receipt number is %s for the amount of K %s", ref.substring(0, 5), totalSale);
+
+                //use string format to add variables to string
+                url = String.format("http://www.bulksms.co.zm/smsservice/httpapi?username=zynlepay&password=zynle12&msg=%s&shortcode=2343&sender_id=0955000679&phone=%s&api_key=121231313213123123", sms, phoneNumberDigits);
+
+                //call sms api
+                makeStringRequest();
 
                 //delete sales
                 AppSingleton.getInstance().clearSales();
@@ -130,7 +144,8 @@ public class PaymentSuccessActivity extends AppCompatActivity {
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(i);
                 finish();
-
+            }
+        }
     }
 
     private void makeStringRequest(){

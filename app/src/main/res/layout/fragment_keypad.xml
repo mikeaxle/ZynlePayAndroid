@@ -1,8 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@android:color/white"
+    android:layout_height="match_parent"
+    android:background="#fff"
     android:orientation="vertical">
 
 
@@ -60,7 +60,7 @@
         <LinearLayout
             android:id="@+id/buttons123"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginTop="2dp"
             android:orientation="horizontal">
 
@@ -109,7 +109,7 @@
         <LinearLayout
             android:id="@+id/buttons456"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginTop="2dp"
             android:orientation="horizontal">
 
@@ -158,7 +158,7 @@
         <LinearLayout
             android:id="@+id/buttons789"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginTop="3dp"
             android:orientation="horizontal">
 
@@ -218,7 +218,8 @@
                 android:background="#fff"
                 android:minHeight="70dp"
                 android:onClick="onClick"
-                android:text="C"
+                android:text="clear"
+                android:textAllCaps="false"
                 android:textColor="@android:color/holo_red_light"
                 android:textSize="25sp" />
 
@@ -245,7 +246,8 @@
                 android:background="#fff"
                 android:minHeight="70dp"
                 android:onClick="onClick"
-                android:text="+"
+                android:text="add"
+                android:textAllCaps="false"
                 android:textColor="@color/colorButtonBlue"
                 android:textSize="25sp" />
 

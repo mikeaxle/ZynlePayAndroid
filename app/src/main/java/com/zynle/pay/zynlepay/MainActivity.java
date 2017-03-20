@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView currentSaleDisplay;                                  //current sale ui
     TextView salesCount;
+    TextView totalAmount;
 
 
     AlertDialog.Builder alert;                                   //alert dialog
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         if(AppSingleton.getInstance().getTotalSales() == 0){
 
         } else {
-            TextView t = (TextView) findViewById(R.id.buttonCharge);
+            TextView t = (TextView) findViewById(R.id.totalTextView);
             t.setText("Charge K " + AppSingleton.getInstance().getTotalSales() + "0");
         }
 
@@ -88,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         //load tabs
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("KEYPAD"));
-        tabLayout.addTab(tabLayout.newTab().setText("PAST SALES"));
+        tabLayout.addTab(tabLayout.newTab().setText("SALES REPORT"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         
         //load view pager
@@ -135,10 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 View propmtsView = li.inflate(R.layout.addnote_prompt, null);
 
                 AlertDialog.Builder addNoteDialog = new AlertDialog.Builder(this);
-
                 addNoteDialog.setView(propmtsView);
-
-
                 addNoteEditText = (EditText) propmtsView.findViewById(R.id.saveNoteEditText);
 
                 //addNoteEditText.setText(note);
@@ -166,6 +164,19 @@ public class MainActivity extends AppCompatActivity {
                 addNoteDialog.show();
 
 
+                break;
+
+            case R.id.viewItemsButton:
+                //navigate to sales list page
+                if( AppSingleton.getInstance().getSalesCount() != 0){
+                    Intent i = new Intent(getApplicationContext(), SaleListActivity.class);
+                    startActivity(i);
+
+                } else {
+
+                    Toast.makeText(this, "You have no items in your sale list", Toast.LENGTH_SHORT).show();
+
+                }
                 break;
 
 
@@ -253,14 +264,15 @@ public class MainActivity extends AppCompatActivity {
 
                 if(currentSale.equals("0") ){
 
-                    Toast.makeText(this, "Cannot Add sale of 0", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Cannot Add amount of 0", Toast.LENGTH_SHORT).show();
       
 
                 } else {
                     currentSaleDisplay.setText("K 0.00");
 
-                    //get charge button
-                    chargeButton = (Button) findViewById(R.id.buttonCharge);
+                    //get total view
+                    totalAmount = (TextView) findViewById(R.id.totalTextView);
+
 
 
                     //instantiate new sale object
@@ -286,9 +298,9 @@ public class MainActivity extends AppCompatActivity {
                     //add sale to total sales
                     AppSingleton.getInstance().setSales(sale);
 
-                    //set charge button price and text
+                    //set total price
                     totalSales = decimalFormat.format(AppSingleton.getInstance().getTotalSales());
-                    chargeButton.setText("Charge K " + totalSales);
+                    totalAmount.setText("K " + totalSales);
 
                     //add to sales dock
                     salesCount.setText("" + AppSingleton.getInstance().getSalesCount());
