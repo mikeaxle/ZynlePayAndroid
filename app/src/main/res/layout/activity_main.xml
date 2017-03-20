@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    >
+
+
+    <TextView
+        android:id="@+id/textViewCharge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="11dp"
+        android:layout_marginLeft="56dp"
+        android:layout_marginStart="72dp"
+        android:text="Current Sale"
+        android:textSize="20dp"
+        android:layout_above="@+id/buttonCharge"
+        android:layout_alignStart="@+id/buttonCharge" />
+
+    <ImageButton
+        android:id="@+id/salesDockImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="18dp"
+        android:layout_toEndOf="@+id/textViewCharge"
+        android:background="@android:color/transparent"
+        android:maxHeight="8dp"
+        android:maxWidth="8dp"
+        android:minHeight="6dp"
+        android:onClick="onClick"
+        app:srcCompat="@mipmap/ic_sales_dock" />
+
+    <Button
+        android:id="@+id/buttonCharge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/salesDockImageButton"
+        android:layout_margin="10dp"
+        android:height="75dp"
+        android:background="@color/colorButtonBlue"
+        android:onClick="onClick"
+        android:text="Charge K 0.00"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:typeface="normal" />
+
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonCharge"
+        android:background="?attr/colorBackgroundFloating"
+        android:elevation="0dp"
+        android:minHeight="?attr/actionBarSize"
+        app:tabIndicatorColor="#95989A"
+        app:tabIndicatorHeight="4dp"
+        app:tabTextAppearance="@style/tabText"
+        app:tabTextColor="#95989A" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tab_layout"
+        />
+
+    <TextView
+        android:id="@+id/numberOfSalesTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textViewCharge"
+        android:layout_alignBottom="@+id/textViewCharge"
+        android:layout_alignEnd="@+id/salesDockImageButton"
+        android:layout_marginEnd="16dp"
+        android:text="0"
+        android:textAlignment="center"
+        android:textSize="15sp" />
+
+
+</RelativeLayout>

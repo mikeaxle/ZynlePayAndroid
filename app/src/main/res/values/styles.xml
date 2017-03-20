@@ -1,11 +1,63 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!--   your app branding color for the app bar -->
+        <item name="colorPrimary">#ededed</item>
+        <!--   darker variant for the status bar and contextual app bars -->
+        <item name="colorPrimaryDark">#303F9F</item>
+        <!--   theme UI controls like checkboxes and text fields -->
+        <item name="colorAccent">#39b7ef</item>
+    </style>
+    <style name="greyText">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#95989A</item>
     </style>
 
+    <style name="titleText">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#95989A</item>
+    </style>
+
+    <style name="listText">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#95989A</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="buttonLarge">
+        <item name="android:layout_height">75dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:background">@color/colorButtonBlue</item>
+        <item name="android:typeface">normal</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:layout_margin">10dp</item>
+    </style>
+
+    <style name="tabText">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="zynleToolBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">?attr/actionBarSize</item>
+        <item name="android:layout_weight">0</item>
+        <item name="android:background">@color/colorToolBarBackground</item>
+        <item name="android:gravity">top</item>
+        <item name="android:minHeight">?attr/actionBarSize</item>
+    </style>
+
+    <style name="inputTextItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">#EDEDED</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#95989A</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:padding">5dp</item>
+</style>
 </resources>

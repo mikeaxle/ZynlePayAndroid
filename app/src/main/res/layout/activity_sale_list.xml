@@ -1,0 +1,28 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/saleListLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/saleListToolBar"
+        style="@style/zynleToolBar"
+        app:navigationIcon="?android:attr/homeAsUpIndicator"
+        app:titleMargin="@dimen/activity_vertical_margin"
+        app:titleTextAppearance="@style/titleText"/>
+
+    <ListView
+        android:id="@+id/saleListView"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/clearSaleButton"
+        style="@style/buttonLarge"
+        android:background="@android:color/holo_red_light"
+        android:onClick="onClick"
+        android:text="Clear Items" />
+</LinearLayout>

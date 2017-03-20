@@ -1,355 +1,298 @@
 package com.zynle.pay.zynlepay;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
-import android.content.pm.PackageManager;
-import android.provider.DocumentsContract;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
-
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.text.TextUtils;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.android.volley.Request.Method;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
 
-import static android.Manifest.permission.READ_CONTACTS;
+import org.glassfish.jersey.internal.util.Base64;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-/**
- * A login screen that offers login via email/password.
- */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
-    private static final int REQUEST_READ_CONTACTS = 0;
+import javax.crypto.KeyGenerator;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
+public class LoginActivity extends AppCompatActivity {
 
-    // UI references.
-    private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
+    TinyDB tinydb;                              //tinybd for reader shared preferences
+    boolean loggedIn;
+
+    EditText phone;
+    EditText password;
+    EditText merchantID;
+
+    //zynle api respsonse url
+    public String urlJsonObj;
+    //"http://www.zynlepay.com:8070/zynlepay/zpay/api/runCardReader?api_id=0977547820&merchant_id=45&request_id=1486433684&key=NDRhN2MzNGY0MzNkZjg5ZDQ5OTM5MTNiOWQyZTYyMDkxOThkODM4ZA==&amount=100&cardnumber=4383755000927515&expirymonth=08&expiryyear=22&cvv=549&product=undefined%20product&nameoncard=Michael%20lungu";
+
+
+    //alert dialog
+    AlertDialog.Builder alert;
+
+    //progress dialog
+    ProgressDialog progressDialog;
+
+    // temporary string to show the parsed response
+    private String jsonResponse;
+
+    //tag for logs
+    private static String TAG = "ZynlePay";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        //load shared preferences in local arraylist
+        tinydb = new TinyDB(getApplicationContext());
+        loggedIn = tinydb.getBoolean("loggedIn");
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        populateAutoComplete();
 
-        mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
+        phone = (EditText) findViewById(R.id.phoneNumberEditText);
+        password = (EditText) findViewById(R.id.passwordEditText);
+        merchantID = (EditText) findViewById(R.id.merchantIDEditText);
+
+        //initialize progress dialog
+        progressDialog = new ProgressDialog(this);
+
+        //initialize progress alert
+        alert = new AlertDialog.Builder(this);
+
+        //show progress dialog
+        showProgressDialog();
+
+        //check if logged in
+        if(loggedIn){
+            Toast.makeText(this, "You are already logged in.", Toast.LENGTH_LONG).show();
+            //navigate to next activity
+            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            finish();
+            startActivity(i);
+        }
+
+        //hide progress dialog
+        hideProgressDialog();
+    }
+
+    public void onClick(View view){
+        /*if (phone.getText().toString().trim() == ""){
+
+            //phone.setError("Empty");
+
+            Toast.makeText(this, "Phone number is missing", Toast.LENGTH_SHORT).show();
+
+            if (password.getText().toString().trim() == ""){
+
+                if (merchantID.getText().toString().trim() == ""){
+
                 }
-                return false;
+
+            }
+        } else {
+            //call api
+
+        }*/
+
+        makeJsonObjectRequest();
+
+    }
+
+    private void makeJsonObjectRequest() {
+
+
+        /**************testing*************** initialize local state
+
+         state = {
+         'username': '0977547820',
+         'password': '1234',
+         'merchant_id': '45',
+         'loading': false,
+         'error': ''
+         }*/
+
+
+        showProgressDialog();
+
+
+        //create request string
+        urlJsonObj = createUrlString(phone.getText().toString().trim(), password.getText().toString().trim(), merchantID.getText().toString().trim());
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Method.GET,
+                urlJsonObj, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.d(TAG, response.toString());
+
+                try {
+                    // Parsing json object response
+                    // response will be a json object
+                    String responseCode = response.getString("responseCode");
+                    jsonResponse = response.toString();
+
+                    Log.d(TAG, jsonResponse);
+
+                    //check value of response description
+                    if(responseCode.equals("100")){
+
+
+                        //save logged in status to shared preferences
+                        tinydb.putBoolean("loggedIn", true);
+
+                        Toast.makeText(LoginActivity.this, "You are now permanently logged in. ", Toast.LENGTH_SHORT).show();
+
+                        //navigate to next activity
+                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        finish();
+                        startActivity(i);
+
+                    } else {
+
+                        //show alert
+                        alert.setTitle("Something went wrong...");
+                        alert.setMessage("Your login details didn't work. If you do not have login credentials, please contact Zynle customer care at 0955000679")
+                                .setPositiveButton("Call Zynle now", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                        Intent i = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + "0955000679"));
+                                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(i);
+
+
+                                    }
+                                })
+                                .setNegativeButton("Go back", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                        dialog.cancel();
+                                    }
+                                });
+
+                        alert.create();
+                        alert.show();
+
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+
+                    Log.e(TAG, "Error: " + e.getMessage());
+
+                    //show alert
+                    alert.setTitle("An error has occurred");
+                    alert.setMessage("Error: " + e.getMessage())
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                    alert.create();
+                    alert.show();
+                }
+
+                hideProgressDialog();
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+
+                //show alert
+                alert.setTitle("No internet connectivity...");
+                alert.setMessage("It appears your phone is not connected to the internet. Please connect to a wifi network or turn on your mobile data")
+                        .setPositiveButton("Got it", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+
+                alert.create();
+                alert.show();
+
+                // hide the progress dialog
+                hideProgressDialog();
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
-
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
-
+        // Adding request to request queue
+        AppSingleton.getInstance().addToRequestQueue(jsonObjReq);
     }
 
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
+    //create url string
+    public static String createUrlString(String _phone, String _password, String _merchantID){
 
-        }
 
-        getLoaderManager().initLoader(0, null, this);
+        Date date = new Date();
+        double requestId = Math.floor(date.getTime() / 1000);
+
+
+        String secret = "b1ad6c0262edce80e705c030760951a35530c771";
+
+        //generate key using sha1
+        String generate_key = KeyGenerator(secret + (int)requestId);
+
+        String url = String.format("http://www.zynlepay.com:8070/zynlepay/zpay/api/userLogin?api_id=0977547820&username=%s&password=%s&merchant_id=%s&request_id=%s&key=%s", _phone, _password, _merchantID, (int)requestId, generate_key);
+
+        Log.d(TAG, "url: " + url);
+
+        return url;
     }
 
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
+    //generated SHA1/MD5
+    public static String KeyGenerator(String key){
+
+        String encoded = "";
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            md.update(key.getBytes());
+            encoded = Base64.encodeAsString(new BigInteger(1, md.digest()).toString(16).getBytes());
+
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(KeyGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-        }
-        return false;
+
+        return encoded ;
     }
 
-    /**
-     * Callback received when a permissions request has been completed.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_READ_CONTACTS) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
-            }
-        }
+    //show progress dialog
+    private void showProgressDialog() {
+        if (!progressDialog.isShowing())
+            progressDialog.show();
     }
 
-
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
-    private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-
-        // Reset errors.
-        mEmailView.setError(null);
-        mPasswordView.setError(null);
-
-        // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
-
-        boolean cancel = false;
-        View focusView = null;
-
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            focusView = mPasswordView;
-            cancel = true;
-        }
-
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView.requestFocus();
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
-        }
-    }
-
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                .CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        List<String> emails = new ArrayList<>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-
-        addEmailsToAutoComplete(emails);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
-    }
-
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
-        //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(LoginActivity.this,
-                        android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-
-        mEmailView.setAdapter(adapter);
-    }
-
-
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
+    //hide progress dialog
+    private void hideProgressDialog() {
+        if (progressDialog.isShowing())
+            progressDialog.dismiss();
     }
 }
-
